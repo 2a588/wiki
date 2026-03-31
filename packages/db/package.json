@@ -1,0 +1,10 @@
+{
+  "name": "@wiki/db",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "types": "index.ts",
+  "dependencies": {
+    "@wiki/shared": "workspace:*"
+  }
+}
