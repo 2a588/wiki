@@ -8,6 +8,7 @@
   "scripts": {
     "dev:server": "bun run --filter @wiki/server dev",
     "dev:web": "bun run --filter @wiki/web dev",
-    "dev": "bun run --filter @wiki/server dev & bun run --filter @wiki/web dev"
+    "dev": "bun run --filter @wiki/server dev & bun run --filter @wiki/web dev",
+    "import:wiz": "bun run scripts/import-wiz.ts"
   }
 }
