@@ -22,6 +22,8 @@ export function getDb(): Database {
 }
 
 function initSchema(db: Database) {
+  try { db.exec("ALTER TABLE pages ADD COLUMN deleted_at TEXT"); } catch {} // migration
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,12 +102,40 @@ function initSchema(db: Database) {
       FOREIGN KEY (created_by) REFERENCES users(id)
     );
 
+    CREATE TABLE IF NOT EXISTS page_labels (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      page_id INTEGER NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+      label TEXT NOT NULL,
+      created_by INTEGER NOT NULL REFERENCES users(id),
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS favorites (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      page_id INTEGER NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(user_id, page_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS mentions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      page_id INTEGER NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+      mentioned_user_id INTEGER NOT NULL REFERENCES users(id),
+      created_by INTEGER NOT NULL REFERENCES users(id),
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE INDEX IF NOT EXISTS idx_pages_space ON pages(space_id);
     CREATE INDEX IF NOT EXISTS idx_pages_parent ON pages(parent_id);
     CREATE INDEX IF NOT EXISTS idx_page_versions_page ON page_versions(page_id);
     CREATE INDEX IF NOT EXISTS idx_attachments_page ON attachments(page_id);
     CREATE INDEX IF NOT EXISTS idx_comments_page ON comments(page_id);
     CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id);
+    CREATE INDEX IF NOT EXISTS idx_labels_page ON page_labels(page_id);
+    CREATE INDEX IF NOT EXISTS idx_labels_label ON page_labels(label);
+    CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
+    CREATE INDEX IF NOT EXISTS idx_mentions_user ON mentions(mentioned_user_id);
   `);
 }
 

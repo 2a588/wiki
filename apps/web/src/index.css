@@ -98,6 +98,20 @@
   @apply text-gray-400 float-left h-0 pointer-events-none;
 }
 
+/* Toast animation */
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* Mention */
+.tiptap .mention {
+  @apply bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded px-1 py-0.5;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

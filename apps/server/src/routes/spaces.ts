@@ -72,7 +72,7 @@ spaceRoutes.delete("/:id", (c) => {
 spaceRoutes.get("/:id/pages", (c) => {
   const spaceId = Number(c.req.param("id"));
   const db = getDb();
-  const pages = db.query("SELECT * FROM pages WHERE space_id = ? ORDER BY position, created_at").all(spaceId) as any[];
+  const pages = db.query("SELECT * FROM pages WHERE space_id = ? AND deleted_at IS NULL ORDER BY position, created_at").all(spaceId) as any[];
 
   // Build tree
   const pageMap = new Map<number, any>();

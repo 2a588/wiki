@@ -90,12 +90,15 @@ wiki/
 ### 页面管理
 - [x] 创建页面（指定空间、可选父页面）
 - [x] 编辑页面标题和内容
-- [x] 删除页面（级联删除子页面，自动重新排序）
+- [x] 删除页面（级联删除子页面，自动重新排序，软删除）
 - [x] 页面层级（parent_id 自引用）
-- [x] 页面树侧边栏（可展开/折叠）
+- [x] 页面树侧边栏（可展开/折叠，拖拽改变层级）
 - [x] Slug 自动生成
-- [x] 页面图标选择（20 种图标）
+- [x] 页面图标选择（Emoji 完整选择器）
 - [x] Markdown 导出
+- [x] 页面模板（空白/会议纪要/API文档/需求文档）
+- [x] 标签系统（添加/删除标签）
+- [x] 收藏功能
 
 ### 富文本编辑器
 - [x] Tiptap 编辑器 + 工具栏
@@ -107,12 +110,21 @@ wiki/
 - [x] 表格（支持行列）
 - [x] 分割线
 - [x] 内容以 JSON 格式存储
+- [x] Slash 命令菜单（输入 / 唤出）
+- [x] @提及用户
+- [x] 自动保存（5秒延迟）
+- [x] 保存状态指示器
+- [x] 全宽 / 默认宽切换
+- [x] 目录生成（TOC，右侧面板）
+- [x] 图片灯箱点击预览
+- [x] 键盘快捷键 Ctrl+S
 
 ### 版本历史
 - [x] 每次保存自动创建新版本
 - [x] 版本列表展示（版本号、作者、时间）
 - [x] 版本号自动递增
 - [x] 版本一键恢复
+- [x] 版本对比 Diff（行级差异高亮）
 
 ### 附件管理
 - [x] 文件上传（图片自动插入编辑器）
@@ -124,6 +136,32 @@ wiki/
 - [x] 按标题和正文内容模糊搜索
 - [x] 顶部搜索栏实时搜索
 
+### 页面评论
+- [x] 评论列表展示
+- [x] 发表评论
+- [x] 回复评论（嵌套支持）
+- [x] 删除评论
+
+### 回收站
+- [x] 软删除页面
+- [x] 恢复页面
+- [x] 永久删除
+- [x] 回收站列表展示
+
+### Dashboard 首页
+- [x] 最近编辑页面
+- [x] 收藏页面列表
+- [x] 空间概览卡片
+- [x] 个人活动动态
+
+### UI 增强
+- [x] 暗色主题切换
+- [x] Toast 通知（替代 alert）
+- [x] 加载骨架屏
+- [x] 空白状态引导
+- [x] 404 页面
+- [x] 响应式侧边栏折叠
+
 ## 数据库表结构
 
 ```sql
@@ -133,53 +171,27 @@ users (id, username, email, password_hash, display_name, created_at, updated_at)
 -- 空间表
 spaces (id, key, name, description, icon, created_by, created_at, updated_at)
 
--- 页面表
-pages (id, space_id, parent_id, title, slug, icon, position, created_by, updated_by, created_at, updated_at)
+-- 页面表（含软删除 deleted_at）
+pages (id, space_id, parent_id, title, slug, icon, position, created_by, updated_by, created_at, updated_at, deleted_at)
 
 -- 页面版本表
 page_versions (id, page_id, content, version, created_by, created_at)
 
 -- 附件表
 attachments (id, page_id, filename, original_name, mime_type, size, created_by, created_at)
+
+-- 评论表
+comments (id, page_id, parent_id, content, created_by, created_at, updated_at)
+
+-- 标签表
+page_labels (id, page_id, label, created_by, created_at)
+
+-- 收藏表
+favorites (id, user_id, page_id, created_at)
+
+-- @提及表
+mentions (id, page_id, mentioned_user_id, created_by, created_at)
 ```
-
-## API 端点
-
-### 认证 `/api/auth`
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | /register | 注册 |
-| POST | /login | 登录 |
-| POST | /logout | 登出 |
-| GET | /me | 获取当前用户 |
-
-### 空间 `/api/spaces`
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | / | 列出所有空间 |
-| GET | /:id | 获取单个空间 |
-| POST | / | 创建空间 |
-| PUT | /:id | 更新空间 |
-| DELETE | /:id | 删除空间 |
-| GET | /:id/pages | 获取空间页面树 |
-
-### 页面 `/api/pages`
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | /:id | 获取页面及内容 |
-| POST | / | 创建页面 |
-| PUT | /:id | 更新页面 |
-| DELETE | /:id | 删除页面 |
-| GET | /:id/versions | 获取版本历史 |
-| GET | /search/:query | 搜索页面 |
-
-### 附件 `/api/attachments`
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | / | 上传附件 |
-| GET | /page/:pageId | 列出页面附件 |
-| GET | /:id | 下载附件 |
-| DELETE | /:id | 删除附件 |
 
 ## 启动方式
 
@@ -209,11 +221,7 @@ bun run dev:web      # 前端 http://localhost:5173 (通过 proxy 转发 API)
 ## 待扩展功能
 
 - [ ] 协同编辑 (CRDT)
-- [ ] 页面评论 UI
-- [ ] @提及通知
-- [ ] 回收站
+- [ ] @提及通知（消息中心）
 - [ ] Markdown 导入
-- [ ] 页面拖拽排序
 - [ ] 权限管理 (空间级)
-- [ ] 自动保存
-- [ ] 页面模板
+- [ ] PDF 导出

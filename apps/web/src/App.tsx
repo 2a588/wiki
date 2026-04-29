@@ -3,9 +3,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/auth";
 import { Layout } from "./components/Layout";
 import { LoginPage } from "./pages/LoginPage";
+import { DashboardPage } from "./pages/DashboardPage";
 import { SpacesPage } from "./pages/SpacesPage";
 import { SpaceDetailPage } from "./pages/SpaceDetailPage";
 import { PageEditor } from "./pages/PageEditor";
+import { RecycleBinPage } from "./pages/RecycleBinPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -38,10 +40,12 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<SpacesPage />} />
+          <Route index element={<DashboardPage />} />
+          <Route path="spaces" element={<SpacesPage />} />
           <Route path="space/:spaceId" element={<SpaceDetailPage />} />
           <Route path="page/:pageId" element={<PageEditor />} />
           <Route path="page/:pageId/edit" element={<PageEditor />} />
+          <Route path="recycle" element={<RecycleBinPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

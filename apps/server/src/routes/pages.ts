@@ -123,14 +123,14 @@ pageRoutes.put("/:id/move", async (c) => {
   return c.json({ success: true, data: updated });
 });
 
-// Delete page
+// Delete page (soft delete)
 pageRoutes.delete("/:id", (c) => {
   const id = Number(c.req.param("id"));
   const db = getDb();
   const page = db.query("SELECT space_id, parent_id, position FROM pages WHERE id = ?").get(id) as any;
   if (page) {
-    db.query("DELETE FROM pages WHERE id = ?").run(id);
-    db.query("UPDATE pages SET position = position - 1 WHERE space_id = ? AND parent_id IS ? AND position > ?")
+    db.query("UPDATE pages SET deleted_at = datetime('now') WHERE id = ?").run(id);
+    db.query("UPDATE pages SET position = position - 1 WHERE space_id = ? AND parent_id IS ? AND position > ? AND deleted_at IS NULL")
       .run(page.space_id, page.parent_id ?? null, page.position);
   }
   return c.json({ success: true });
@@ -162,7 +162,7 @@ pageRoutes.get("/search/:query", (c) => {
   const results = db
     .query(`SELECT DISTINCT p.* FROM pages p
       LEFT JOIN page_versions pv ON p.id = pv.page_id AND pv.version = (SELECT MAX(version) FROM page_versions WHERE page_id = p.id)
-      WHERE p.title LIKE ? OR pv.content LIKE ?
+      WHERE p.deleted_at IS NULL AND (p.title LIKE ? OR pv.content LIKE ?)
       ORDER BY p.updated_at DESC LIMIT 20`)
     .all(`%${query}%`, `%${query}%`);
   return c.json({ success: true, data: results });

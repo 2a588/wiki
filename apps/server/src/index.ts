@@ -7,6 +7,11 @@ import { spaceRoutes } from "./routes/spaces";
 import { pageRoutes } from "./routes/pages";
 import { attachmentRoutes } from "./routes/attachments";
 import { commentRoutes } from "./routes/comments";
+import { dashboardRoutes } from "./routes/dashboard";
+import { favoriteRoutes } from "./routes/favorites";
+import { labelRoutes } from "./routes/labels";
+import { recycleRoutes } from "./routes/recycle";
+import { mentionRoutes } from "./routes/mentions";
 import { join, extname } from "path";
 
 const app = new Hono();
@@ -23,6 +28,11 @@ app.route("/api/spaces", spaceRoutes);
 app.route("/api/pages", pageRoutes);
 app.route("/api/attachments", attachmentRoutes);
 app.route("/api", commentRoutes);
+app.route("/api/dashboard", dashboardRoutes);
+app.route("/api/favorites", favoriteRoutes);
+app.route("/api/labels", labelRoutes);
+app.route("/api/recycle", recycleRoutes);
+app.route("/api/mentions", mentionRoutes);
 
 const UPLOAD_DIR = join(import.meta.dir, "..", "..", "..", "uploads");
 const WEB_DIST = join(import.meta.dir, "..", "..", "..", "apps", "web", "dist");
