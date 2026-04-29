@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { getDb } from "@wiki/db";
 import { authMiddleware, getCurrentUser } from "../middleware/auth";
 import { join } from "path";
+import { existsSync, mkdirSync, unlinkSync } from "fs";
 
 export const attachmentRoutes = new Hono();
 
@@ -9,10 +10,8 @@ attachmentRoutes.use("*", authMiddleware);
 
 const UPLOAD_DIR = join(import.meta.dir, "..", "..", "..", "..", "uploads");
 
-// Ensure upload directory exists
-const fs = require("fs");
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+if (!existsSync(UPLOAD_DIR)) {
+  mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
 // Upload attachment
@@ -82,8 +81,10 @@ attachmentRoutes.delete("/:id", (c) => {
 
   const filepath = join(UPLOAD_DIR, attachment.filename);
   try {
-    fs.unlinkSync(filepath);
-  } catch {}
+    unlinkSync(filepath);
+  } catch (e) {
+    console.error("Failed to delete attachment file:", filepath, e);
+  }
 
   db.query("DELETE FROM attachments WHERE id = ?").run(id);
   return c.json({ success: true });

@@ -36,32 +36,33 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
       <div className="card p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">
+        <h1 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">
           {isLogin ? "登录 Wiki" : "注册 Wiki"}
         </h1>
 
         {error && (
-          <div className="bg-red-50 text-red-600 px-4 py-2 rounded-md mb-4 text-sm">{error}</div>
+          <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-2 rounded-md mb-4 text-sm">{error}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">用户名</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">用户名</label>
             <input
               type="text"
               className="input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              autoFocus
             />
           </div>
 
           {!isLogin && (
             <>
               <div>
-                <label className="block text-sm font-medium mb-1">邮箱</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">邮箱</label>
                 <input
                   type="email"
                   className="input"
@@ -71,7 +72,7 @@ export function LoginPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">显示名称</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">显示名称</label>
                 <input
                   type="text"
                   className="input"
@@ -84,7 +85,7 @@ export function LoginPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium mb-1">密码</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">密码</label>
             <input
               type="password"
               className="input"
@@ -99,11 +100,11 @@ export function LoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
           {isLogin ? "没有账号？" : "已有账号？"}
           <button
             onClick={() => { setIsLogin(!isLogin); setError(""); }}
-            className="text-blue-600 hover:underline ml-1"
+            className="text-blue-600 dark:text-blue-400 hover:underline ml-1"
           >
             {isLogin ? "注册" : "登录"}
           </button>

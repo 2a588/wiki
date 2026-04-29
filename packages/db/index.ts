@@ -1,5 +1,6 @@
 import { Database } from "bun:sqlite";
 import { join } from "path";
+import { existsSync, mkdirSync } from "fs";
 
 const DB_PATH = join(import.meta.dir, "..", "..", "data", "wiki.db");
 
@@ -8,13 +9,9 @@ let db: Database | null = null;
 export function getDb(): Database {
   if (!db) {
     const dir = join(import.meta.dir, "..", "..", "data");
-    // Ensure data directory exists
-    try {
-      const fs = require("fs");
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-    } catch {}
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true });
+    }
 
     db = new Database(DB_PATH, { create: true });
     db.exec("PRAGMA journal_mode = WAL");
@@ -90,10 +87,25 @@ function initSchema(db: Database) {
       FOREIGN KEY (created_by) REFERENCES users(id)
     );
 
+    CREATE TABLE IF NOT EXISTS comments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      page_id INTEGER NOT NULL,
+      parent_id INTEGER,
+      content TEXT NOT NULL,
+      created_by INTEGER NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (page_id) REFERENCES pages(id) ON DELETE CASCADE,
+      FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE,
+      FOREIGN KEY (created_by) REFERENCES users(id)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_pages_space ON pages(space_id);
     CREATE INDEX IF NOT EXISTS idx_pages_parent ON pages(parent_id);
     CREATE INDEX IF NOT EXISTS idx_page_versions_page ON page_versions(page_id);
     CREATE INDEX IF NOT EXISTS idx_attachments_page ON attachments(page_id);
+    CREATE INDEX IF NOT EXISTS idx_comments_page ON comments(page_id);
+    CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id);
   `);
 }
 

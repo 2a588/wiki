@@ -63,11 +63,19 @@ export const api = {
     get: (id: number) => request<any>(`/pages/${id}`),
     create: (data: { spaceId: number; parentId?: number | null; title: string; icon?: string; content?: string }) =>
       request<any>("/pages", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: number, data: { title?: string; content?: string; icon?: string }) =>
+    update: (id: number, data: { title?: string; content?: string; icon?: string; parentId?: number | null }) =>
       request<any>(`/pages/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     delete: (id: number) => request<void>(`/pages/${id}`, { method: "DELETE" }),
     versions: (id: number) => request<any[]>(`/pages/${id}/versions`),
     search: (query: string) => request<any[]>(`/pages/search/${encodeURIComponent(query)}`),
+    comments: {
+      get: (pageId: number) => request<any[]>(`/pages/${pageId}/comments`),
+      create: (pageId: number, data: { content: string; parentId?: number | null }) =>
+        request<any>(`/pages/${pageId}/comments`, { method: "POST", body: JSON.stringify(data) }),
+      update: (commentId: number, data: { content: string }) =>
+        request<any>(`/comments/${commentId}`, { method: "PUT", body: JSON.stringify(data) }),
+      delete: (commentId: number) => request<void>(`/comments/${commentId}`, { method: "DELETE" }),
+    },
   },
   attachments: {
     upload: (file: File, pageId: number) => {

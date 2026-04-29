@@ -16,7 +16,7 @@ function PageTreeItem({ node, spaceId, onDelete, depth = 0 }: { node: PageNode; 
   return (
     <div>
       <div
-        className="flex items-center gap-1 py-1.5 px-2 rounded-md hover:bg-gray-100 group"
+        className="flex items-center gap-1 py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 group"
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
       >
         {hasChildren ? (
@@ -28,7 +28,7 @@ function PageTreeItem({ node, spaceId, onDelete, depth = 0 }: { node: PageNode; 
         ) : (
           <span className="w-4" />
         )}
-        <Link to={`/page/${node.id}`} className="flex-1 text-sm flex items-center gap-1.5 truncate">
+        <Link to={`/page/${node.id}`} className="flex-1 text-sm flex items-center gap-1.5 truncate text-gray-900 dark:text-gray-100">
           <span>{node.icon || "📄"}</span>
           <span className="truncate">{node.title}</span>
         </Link>
@@ -72,7 +72,9 @@ export function SpaceDetailPage() {
       ]);
       setSpace(s);
       setPages(p);
-    } catch {}
+    } catch (e) {
+      console.error("Failed to load space:", e);
+    }
   };
 
   useEffect(() => { load(); }, [spaceId]);
@@ -97,28 +99,27 @@ export function SpaceDetailPage() {
   };
 
   if (!space) {
-    return <div className="flex-1 p-8"><p className="text-gray-500">加载中...</p></div>;
+    return <div className="flex-1 p-8"><p className="text-gray-500 dark:text-gray-400">加载中...</p></div>;
   }
 
   return (
     <div className="flex flex-1 overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-gray-200 flex flex-col bg-gray-50">
-        <div className="p-4 border-b border-gray-200">
+      <aside className="w-56 sm:w-64 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gray-50 dark:bg-gray-800 shrink-0">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <span className="text-xl">{space.icon}</span>
             <div>
-              <h2 className="font-semibold text-sm">{space.name}</h2>
+              <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100">{space.name}</h2>
               <span className="text-xs text-gray-400 font-mono">{space.key}</span>
             </div>
           </div>
         </div>
         <div className="p-2 flex-1 overflow-auto">
           <div className="flex items-center justify-between px-2 py-1 mb-1">
-            <span className="text-xs font-semibold text-gray-500 uppercase">页面</span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">页面</span>
             <button
               onClick={() => setShowNewPage(true)}
-              className="text-gray-400 hover:text-blue-600"
+              className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
               title="新建页面"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -145,7 +146,11 @@ export function SpaceDetailPage() {
           )}
 
           {pages.length === 0 ? (
-            <p className="text-xs text-gray-400 px-2 py-4 text-center">暂无页面</p>
+            <div className="text-center py-12 text-gray-400 dark:text-gray-500">
+              <p className="text-3xl mb-2">📄</p>
+              <p className="text-xs">暂无页面</p>
+              <p className="text-xs mt-1">点击 + 创建第一个页面</p>
+            </div>
           ) : (
             pages.map((page) => (
               <PageTreeItem key={page.id} node={page} spaceId={Number(spaceId)} onDelete={handleDeletePage} />
@@ -154,9 +159,9 @@ export function SpaceDetailPage() {
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 flex items-center justify-center text-gray-400">
+      <main className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
         <div className="text-center">
+          <div className="text-5xl mb-4">📝</div>
           <p className="text-lg mb-2">选择左侧页面开始编辑</p>
           <p className="text-sm">或点击 + 按钮创建新页面</p>
         </div>

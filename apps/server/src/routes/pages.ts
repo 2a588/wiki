@@ -73,18 +73,18 @@ pageRoutes.post("/", async (c) => {
 // Update page
 pageRoutes.put("/:id", async (c) => {
   const id = Number(c.req.param("id"));
-  const { title, content, icon } = await c.req.json();
+  const { title, content, icon, parentId } = await c.req.json();
   const { userId } = getCurrentUser(c);
   const db = getDb();
 
   const page = db.query("SELECT * FROM pages WHERE id = ?").get(id) as any;
   if (!page) return c.json({ success: false, error: "Page not found" }, 404);
 
-  if (title || icon !== undefined) {
+  if (title || icon !== undefined || parentId !== undefined) {
     const slug = title ? slugify(title) : null;
     db.query(
-      "UPDATE pages SET title = COALESCE(?, title), slug = COALESCE(?, slug), icon = COALESCE(?, icon), updated_by = ?, updated_at = datetime('now') WHERE id = ?"
-    ).run(title ?? null, slug, icon ?? null, userId, id);
+      "UPDATE pages SET title = COALESCE(?, title), slug = COALESCE(?, slug), icon = COALESCE(?, icon), parent_id = COALESCE(?, parent_id), updated_by = ?, updated_at = datetime('now') WHERE id = ?"
+    ).run(title ?? null, slug, icon ?? null, parentId ?? null, userId, id);
   }
 
   if (content) {
@@ -104,11 +104,35 @@ pageRoutes.put("/:id", async (c) => {
   return c.json({ success: true, data: updated });
 });
 
+// Move page
+pageRoutes.put("/:id/move", async (c) => {
+  const id = Number(c.req.param("id"));
+  const { parentId, position } = await c.req.json();
+  const db = getDb();
+
+  const page = db.query("SELECT * FROM pages WHERE id = ?").get(id) as any;
+  if (!page) return c.json({ success: false, error: "Page not found" }, 404);
+
+  db.query("UPDATE pages SET parent_id = ?, position = ?, updated_at = datetime('now') WHERE id = ?")
+    .run(parentId ?? null, position ?? 0, id);
+
+  // Update space updated_at
+  db.query("UPDATE spaces SET updated_at = datetime('now') WHERE id = ?").run(page.space_id);
+
+  const updated = db.query("SELECT * FROM pages WHERE id = ?").get(id);
+  return c.json({ success: true, data: updated });
+});
+
 // Delete page
 pageRoutes.delete("/:id", (c) => {
   const id = Number(c.req.param("id"));
   const db = getDb();
-  db.query("DELETE FROM pages WHERE id = ?").run(id);
+  const page = db.query("SELECT space_id, parent_id, position FROM pages WHERE id = ?").get(id) as any;
+  if (page) {
+    db.query("DELETE FROM pages WHERE id = ?").run(id);
+    db.query("UPDATE pages SET position = position - 1 WHERE space_id = ? AND parent_id IS ? AND position > ?")
+      .run(page.space_id, page.parent_id ?? null, page.position);
+  }
   return c.json({ success: true });
 });
 
@@ -136,7 +160,12 @@ pageRoutes.get("/search/:query", (c) => {
   const query = c.req.param("query");
   const db = getDb();
   const results = db
-    .query("SELECT p.*, pv.content FROM pages p LEFT JOIN page_versions pv ON p.id = pv.page_id AND pv.version = (SELECT MAX(version) FROM page_versions WHERE page_id = p.id) WHERE p.title LIKE ? ORDER BY p.updated_at DESC LIMIT 20")
-    .all(`%${query}%`);
+    .query(`SELECT DISTINCT p.* FROM pages p
+      LEFT JOIN page_versions pv ON p.id = pv.page_id AND pv.version = (SELECT MAX(version) FROM page_versions WHERE page_id = p.id)
+      WHERE p.title LIKE ? OR pv.content LIKE ?
+      ORDER BY p.updated_at DESC LIMIT 20`)
+    .all(`%${query}%`, `%${query}%`);
   return c.json({ success: true, data: results });
 });
+
+

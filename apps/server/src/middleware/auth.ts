@@ -18,21 +18,12 @@ export function deleteSession(token: string) {
 
 export async function authMiddleware(c: Context, next: Next) {
   const authHeader = c.req.header("Authorization");
-  const cookie = c.req.header("Cookie");
 
-  let token: string | null = null;
-
-  if (authHeader?.startsWith("Bearer ")) {
-    token = authHeader.slice(7);
-  } else if (cookie) {
-    const match = cookie.match(/wiki_session=([^;]+)/);
-    if (match) token = match[1];
-  }
-
-  if (!token) {
+  if (!authHeader?.startsWith("Bearer ")) {
     return c.json({ success: false, error: "Unauthorized" }, 401);
   }
 
+  const token = authHeader.slice(7);
   const session = getSession(token);
   if (!session) {
     return c.json({ success: false, error: "Invalid session" }, 401);

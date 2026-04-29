@@ -6,6 +6,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { SpacesPage } from "./pages/SpacesPage";
 import { SpaceDetailPage } from "./pages/SpaceDetailPage";
 import { PageEditor } from "./pages/PageEditor";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
@@ -20,22 +21,30 @@ export default function App() {
     loadFromStorage();
   }, []);
 
+  useEffect(() => {
+    const isDark = localStorage.getItem("wiki_dark") === "true";
+    if (isDark) document.documentElement.classList.add("dark");
+  }, []);
+
   return (
-    <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<SpacesPage />} />
-        <Route path="space/:spaceId" element={<SpaceDetailPage />} />
-        <Route path="page/:pageId" element={<PageEditor />} />
-        <Route path="page/:pageId/edit" element={<PageEditor />} />
-      </Route>
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<SpacesPage />} />
+          <Route path="space/:spaceId" element={<SpaceDetailPage />} />
+          <Route path="page/:pageId" element={<PageEditor />} />
+          <Route path="page/:pageId/edit" element={<PageEditor />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </>
   );
 }

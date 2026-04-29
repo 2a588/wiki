@@ -6,6 +6,7 @@ import { authRoutes } from "./routes/auth";
 import { spaceRoutes } from "./routes/spaces";
 import { pageRoutes } from "./routes/pages";
 import { attachmentRoutes } from "./routes/attachments";
+import { commentRoutes } from "./routes/comments";
 import { join, extname } from "path";
 
 const app = new Hono();
@@ -21,6 +22,7 @@ app.route("/api/auth", authRoutes);
 app.route("/api/spaces", spaceRoutes);
 app.route("/api/pages", pageRoutes);
 app.route("/api/attachments", attachmentRoutes);
+app.route("/api", commentRoutes);
 
 const UPLOAD_DIR = join(import.meta.dir, "..", "..", "..", "uploads");
 const WEB_DIST = join(import.meta.dir, "..", "..", "..", "apps", "web", "dist");
